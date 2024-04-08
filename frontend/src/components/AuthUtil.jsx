@@ -25,6 +25,17 @@ export const AuthProvider = ({children }) => {
     return saved || false;
   });
 
+  const [cert, setCert] = useState(() => {
+    const saved = JSON.parse(localStorage.getItem("cert"));
+    return saved || "";
+  
+  });
+
+  const [privateKey, setPrivateKey] = useState(() => {
+    const saved = JSON.parse(localStorage.getItem("privateKey"));
+    return saved || "";
+  });
+
     useEffect(() => {
         localStorage.setItem("username", JSON.stringify(userName));
         localStorage.setItem("chatColor", JSON.stringify(chatColor));
@@ -38,6 +49,14 @@ export const AuthProvider = ({children }) => {
   useEffect(() => {
     localStorage.setItem("firstMessage", JSON.stringify(firstMessage));
 }, [firstMessage]);
+
+  useEffect(() => {
+    localStorage.setItem("cert", JSON.stringify(cert));
+}, [cert]);
+
+useEffect(() => {
+  localStorage.setItem("privateKey", JSON.stringify(privateKey));
+}, [privateKey]);
 
 
 

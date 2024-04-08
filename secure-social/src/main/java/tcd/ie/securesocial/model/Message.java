@@ -35,4 +35,7 @@ public class Message {
 
     @Column(name = "chatcolor", nullable = false)
     private String chatcolor;
+
+    @Column(name = "keyID", nullable = false)
+    private Long keyID;
 }

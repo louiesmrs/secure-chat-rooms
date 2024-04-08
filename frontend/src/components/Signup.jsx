@@ -1,34 +1,45 @@
 import axios from 'axios';
 import { useState, useContext} from 'react';
-import {Link } from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 import { AuthContext } from './AuthUtil';
 import Navbar from './Navbar';
-
+import forge from 'node-forge';
+import { BASE_URL } from '../api/baseApi';
 export default function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const {setUserName} = useContext(AuthContext);
+    const navigate = useNavigate();
+    const {setUserName, setCert, setPrivateKey, setChatColor} = useContext(AuthContext);
+    const options = ["text-fuchsia-500", "text-blue-500", "text-yellow-500", 
+    "text-green-500", "text-red-500", "text-indigo-500", "text-purple-500", "text-pink-500",
+     "text-teal-500", "text-cyan-500", "text-rose-500", "text-amber-500", "text-emerald-500", 
+     "text-lime-500", "text-sky-500", "text-violet-500"]
     const handleSubmit = (e) => {
         e.preventDefault();
         if(username && password) {
-            setUserName(username);
-            // const formData = new FormData();
-            // formData.append("username", username);
-            // formData.append("password", password);
-            // axios({
-            //     method: 'post',
-            //     url: "http://localhost:8000/auth/register",
-            //     data: formData,
-            //     headers: {'Content-Type': 'multipart/form-data' }
-            // })
-            // .then((response) => {
-            //     console.log("Video uploaded");
-            //     setuserName(response.data.username);
-            //     })
-            // .catch(function (error) {
-            //     // handle error
-            //     console.log(error);
-            // }); 
+            var keys = forge.pki.rsa.generateKeyPair({bits: 2048});
+            var cert = forge.pki.createCertificate();
+            console.log(cert);
+            console.log(keys);
+
+            const values = {
+                username: username,
+                password: password,
+                cert: cert.toString(),
+            }
+            axios.post(`${BASE_URL}/auth/register`, values)
+            .then((response) => {
+                console.log(response);
+                setUserName(response.data.username);
+                setCert(cert);
+                setPrivateKey(keys.privateKey);
+                setChatColor(options[Math.floor(Math.random() * options.length)]);
+                navigate(`/home`);
+                })
+            .catch(function (error) {
+                // handle error
+                console.log(error);
+            }); 
         }
     }
     return (

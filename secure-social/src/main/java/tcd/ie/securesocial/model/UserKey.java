@@ -12,8 +12,8 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "room_key")
-public class RoomKey{
+@Table(name = "user_key")
+public class UserKey{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -22,12 +22,15 @@ public class RoomKey{
     @Column(name = "publicKey" , nullable = false, length = 100)
     private Key publicKey;
 
-    @Column(name = "privateKey" , nullable = false, length = 100)
-    private Key privateKey;
+    @Column(name = "roomname" , nullable = false, length = 100)
+    private String roomname;
+
+    @Column(name = "keyID" , nullable = false, length = 100)
+    private Long keyID;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id")
-    private Room room;
+    @JoinColumn(name = "user_id")
+    private User user;
     
     
 

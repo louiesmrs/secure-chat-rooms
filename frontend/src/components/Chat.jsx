@@ -1,5 +1,5 @@
 
-import { createRef, useEffect, useRef, useState, useContext } from "react";
+import { createRef, useEffect, useRef, useState, useContext, useMemo } from "react";
 // @ts-ignore
 import { postMessage, postSystemMessage, loadMessagesRoom, loadRoomByName, postLeaveRoom, postLockRoom, postUnlockRoom } from "../api/messageApi";
 import Message from "./Message";
@@ -12,15 +12,12 @@ import {
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import { getOrCreateStompClient } from "../api/stompClient";
-
-import forge from 'node-forge';
+import forge from "node-forge/lib/forge";
+import axios from "axios";
+import { BASE_URL } from "../api/baseApi";
 function Chat() {
     const title = useParams().id;
-    var keys = forge.pki.rsa.generateKeyPair({bits: 2048});
-    var cert = forge.pki.createCertificate();
-    cert.publicKey = keys.publicKey;
-    console.log(cert);
-    console.log(keys);
+
     /**
      * @typedef {Object} room
      * @property {string} roomName
@@ -30,11 +27,26 @@ function Chat() {
     const [room, setRoom] = useState({});
     const [messages, setMessages] = useState([]);
     const [message, setMessage] = useState("");
+    const [keys, setKeys] = useState([]);
     const endOfListRef = createRef();
     const stateRef = useRef();
     const {userName, leaveGroup, chatColor, firstMessage, setFirstMessage } = useContext(AuthContext);
     const navigate = useNavigate();
     
+    
+    useEffect(() => {
+        
+        axios.get(`${BASE_URL}/key`, userName)
+        .then((response) => {
+            console.log(response);
+            setKeys(response.data);
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+
+    }, [messages]);
+
     // @ts-ignore
     stateRef.current = {messages};
 
@@ -52,7 +64,11 @@ function Chat() {
         loadMessagesRoom(title)
         .then((response) => {
             const data = response.data;
-            setMessages(data);
+            let newMessages = [];
+            for(let i = 0; i < data.length; i++) {
+                newMessages.push(decryptMessage(data[i]));
+            }
+            setMessages(newMessages);
             // @ts-ignore
             stateRef.current = {messages: data};
     
@@ -87,9 +103,21 @@ function Chat() {
         console.log(messages);
         // @ts-ignore
         let newMesages = [...stateRef.current.messages];
-        newMesages.push(JSON.parse(response.body));
+        const message = decryptMessage(JSON.parse(response.body));
+        newMesages.push(message);
         console.log(newMesages);
         setMessages(newMesages);
+    }
+
+
+    const decryptMessage = (message) => {
+        const key = keys.find((key) => key.keyID === message.keyID);
+        if (key) {
+            const publicKey = forge.pki.publicKeyFromPem(key.publicKey);
+            const decryptedMessage = publicKey.decrypt(message.content);
+            message.content = decryptedMessage;
+        } 
+        return message;
     }
     //Scroll to bottom once new message is retrieved if was already scrolled to bottom
     console.log(messages);

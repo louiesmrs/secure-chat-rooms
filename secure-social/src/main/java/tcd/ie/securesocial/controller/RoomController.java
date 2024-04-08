@@ -1,5 +1,6 @@
 package tcd.ie.securesocial.controller;
 import tcd.ie.securesocial.service.RoomService;
+import tcd.ie.securesocial.model.UserKey;
 import tcd.ie.securesocial.service.RoomDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -8,7 +9,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -17,22 +21,22 @@ public class RoomController {
     private final RoomService roomService;
 
     @PostMapping("/room")
-    public RoomDto postRoom(RoomDto roomDto) {
+    public RoomDto postRoom(RoomDto roomDto) throws NoSuchAlgorithmException {
         System.out.println("Room Received");
         System.out.println(roomDto);
         return roomService.saveRoom(roomDto);
     }
 
     @PostMapping("/joinroom/{roomName}")
-    public ResponseEntity<Void> joinRoom(@PathVariable String roomName) {
-        roomService.memberJoin(roomName);
+    public ResponseEntity<Void> joinRoom(@PathVariable String roomName, @RequestParam String username) throws NoSuchAlgorithmException {
+        roomService.memberJoin(roomName, username);
         return ResponseEntity.ok().build();
 
     }
 
     @PostMapping("/leaveroom/{roomName}")
-    public ResponseEntity<Void> leaveRoom(@PathVariable String roomName) {
-        roomService.memberLeave(roomName);
+    public ResponseEntity<Void> leaveRoom(@PathVariable String roomName, @RequestParam String username) throws NoSuchAlgorithmException {
+        roomService.memberLeave(roomName, username);
         return ResponseEntity.ok().build();
     }
 
@@ -58,6 +62,12 @@ public class RoomController {
     public ResponseEntity<RoomDto> getRoomByName(@PathVariable String roomName) {
         return ResponseEntity.ok(roomService.getRoomByName(roomName));
     }
+
+    @GetMapping("/getKeys/{roomName}")
+    public ResponseEntity<List<UserKey>> getKeys(@PathVariable String roomName, @RequestParam String username) {
+        return ResponseEntity.ok(roomService.getUserKeysByRoom(roomName, username));
+    }
+    
 
 
 }

@@ -10,7 +10,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 @Controller
 @RequiredArgsConstructor
@@ -21,7 +27,7 @@ public class MessageController {
     @MessageMapping("/message/{roomName}")
     @SubscribeMapping("/message/{roomName}")
     @SendTo("/topic/message/{roomName}")
-    public MessageDto postMessage(MessageDto messageDto) {
+    public MessageDto postMessage(MessageDto messageDto) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
         System.out.println("Message Received");
         System.out.println(messageDto);
         return messageService.saveMessage(messageDto);

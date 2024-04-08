@@ -23,6 +23,7 @@ public class MessageDto implements Serializable {
     private String userName;
     private String roomName;
     private String chatColor;
+    private Long keyID;
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
@@ -35,6 +36,7 @@ public class MessageDto implements Serializable {
                 .roomName(message.getRoomname())
                 .timestamp(message.getTimestamp())
                 .chatColor(message.getChatcolor())
+                .keyID(message.getKeyID())
                 .build();
     }
 

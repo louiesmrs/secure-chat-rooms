@@ -34,15 +34,17 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final RoomRepository roomRepository;
 
-    public MessageDto saveMessage(MessageDto uiMessage) {
+    public MessageDto saveMessage(MessageDto uiMessage) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+        String crypto = encryptMessage(uiMessage.getContent(), uiMessage.getRoomName());
+        Long keyId = getRoomKeyId(uiMessage.getRoomName());
         Message message = Message.builder()
-                .message(HtmlUtils.htmlEscape(uiMessage.getContent()))
+                .message(HtmlUtils.htmlEscape(crypto))
                 .username(HtmlUtils.htmlEscape(uiMessage.getUserName()))
                 .roomname(HtmlUtils.htmlEscape(uiMessage.getRoomName()))
                 .timestamp(LocalDateTime.now())
                 .chatcolor(HtmlUtils.htmlEscape(uiMessage.getChatColor()))
+                .keyID(keyId)
                 .build();
-        message.setMessage(encryptMessage(message.getMessage(), message.getRoomname());
         Message savedMessage = messageRepository.save(message);
         return MessageDto.fromMessage(savedMessage);
     }
@@ -74,5 +76,11 @@ public class MessageService {
         cipher.init(Cipher.ENCRYPT_MODE, room.getKeys().get(room.getKeys().size()-1).getPrivateKey());
         byte[] encryptedMessage = cipher.doFinal(message.getBytes());
         return Base64.getEncoder().encodeToString(encryptedMessage);
+    }
+
+    public Long getRoomKeyId(String room) {
+        Room roomObj = roomRepository.findByRoomname(room)
+                .orElseThrow(() -> new IllegalArgumentException("Room does not exist"));
+        return roomObj.getKeys().get(roomObj.getKeys().size()-1).getId();
     }
 }
