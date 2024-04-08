@@ -65,6 +65,7 @@ function RoomList() {
         })
         .catch((error) => {
             console.warn(error);
+            alert(error.response.data.message)
         });
 
     }
@@ -102,7 +103,7 @@ function RoomList() {
          <div className="flex flex-col overflow-y-scroll cursor-pointer h-100">
         {/* Chats */}
         {rooms.length !== 0 ? rooms?.map((room, i) => (  
-             <div key={i} className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-4 text-xl">
+             <div key={i} className="flex content-center justify-between shadow-lg rounded-full bg-grey-700 hover:bg-blue-900 p-4 text-xl">
                 { groups.includes(room.roomName) ? 
                 <div onClick={handleEnter(room.roomName)}>ENTER {room.roomName} : {room.numberMembers} {room.numberMembers === 1 ? "Member" : "Members"}</div>
                     : <button onClick={()=> JoinRoom(room.roomName)}>JOIN {room.roomName} : {room.numberMembers} {room.numberMembers === 1 ? "Member" : "Members"}</button>

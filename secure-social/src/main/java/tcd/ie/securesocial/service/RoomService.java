@@ -1,8 +1,10 @@
 package tcd.ie.securesocial.service;
 
 import tcd.ie.securesocial.model.Room;
+import tcd.ie.securesocial.model.RoomKey;
 import tcd.ie.securesocial.repository.MessageRepository;
 import tcd.ie.securesocial.repository.RoomRepository;
+import tcd.ie.securesocial.repository.RoomKeyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,12 +16,17 @@ import java.util.stream.StreamSupport;
 
 import static java.util.stream.Collectors.toList;
 
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+
 @Service
 @RequiredArgsConstructor
 public class RoomService {
 
     private final RoomRepository roomRepository;
     private final MessageRepository messageRepository;
+    private final RoomKeyRepository RoomKeyRepository;
 
     public RoomDto saveRoom(RoomDto uiRoom) {
         Room room = Room.builder()
@@ -31,7 +38,7 @@ public class RoomService {
     }
 
     public List<RoomDto> getAllRooms() {
-        Iterable<Room> rooms = roomRepository.findAll();
+        Iterable<Room> rooms = roomRepository.findUnlockedRooms();
         return StreamSupport
                 .stream(rooms.spliterator(), false)
                 .sorted(Comparator.comparing(Room::getNumbermembers).reversed())
@@ -51,6 +58,9 @@ public class RoomService {
         if(!roomRepository.existsByRoomname(roomName)){
             throw new IllegalArgumentException("Room does not exist");
         }
+        if(roomRepository.findByRoomname(roomName).get().isLocked()){
+            throw new IllegalArgumentException("Room is locked");
+        }
         roomRepository.incrementNumberMembers(roomName);
     }
 
@@ -65,5 +75,40 @@ public class RoomService {
             roomRepository.delete(room);
             messageRepository.deleteByRoomname(roomName);
         }
+    }
+
+    @Transactional
+    public void lockRoom(String roomName) {
+        Room room = roomRepository.findByRoomname(roomName)
+                .orElseThrow(() -> new IllegalArgumentException("Room does not exist"));
+        if(room.isLocked()){
+            throw new IllegalArgumentException("Room is already locked");
+        } else {
+            roomRepository.lockRoom(roomName);
+        }
+    }
+
+    @Transactional
+    public void unlockRoom(String roomName) {
+        Room room = roomRepository.findByRoomname(roomName)
+                .orElseThrow(() -> new IllegalArgumentException("Room does not exist"));
+        if(!room.isLocked()){
+            throw new IllegalArgumentException("Room is already unlocked");
+        } else {
+            roomRepository.unlockRoom(roomName);
+        }
+    }
+
+    @Transactional
+    public void genNewRoomKey(Room room) throws NoSuchAlgorithmException {
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        keyPairGenerator.initialize(2048);
+        KeyPair keyPair = keyPairGenerator.generateKeyPair();   
+        RoomKey newKey = RoomKey.builder()
+                .publicKey(keyPair.getPublic())
+                .privateKey(keyPair.getPrivate())
+                .room(room)
+                .build();
+        RoomKeyRepository.save(newKey);
     }
 }

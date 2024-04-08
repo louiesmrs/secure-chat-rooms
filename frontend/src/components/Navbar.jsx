@@ -1,5 +1,5 @@
 import {
-    VideoCameraOutlined
+    PhoneFilled
 } from "@ant-design/icons";
 import { useContext, useState } from "react";
 import { AuthContext } from "./AuthUtil";
@@ -34,10 +34,10 @@ function Navbar() {
 
 
 return (
-    <nav className="bg-white border-gray-200 dark:bg-gray-900">
+    <nav className="sticky top-0 bg-white border-gray-200 dark:bg-[#202d33]">
         <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         <Link to="/" className="flex items-center space-x-3 rtl:space-x-reverse">
-            <VideoCameraOutlined className="h-3 max-w-xl" alt=" Logo" />
+            <PhoneFilled style={{fontSize:'125%'}}className="h-3 max-w-xl" alt=" Logo" />
             <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Secure Social Media</span>
         </Link>
         <button type="button" className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-default" aria-expanded="false" onClick={handleClick}>
@@ -47,23 +47,28 @@ return (
         </svg>
         </button>
         <div className={
-            "w-full md:block md:w-auto" +
-            (open ? " flex" : " hidden")
+            "w-full md:block md:w-auto " +
+            (open ? "grid grid-cols-3" : " hidden")
         }>
-        <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+        <ul className={"col-start-3 relative z-50 font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white dark:bg-[#202d33] md:dark:bg-[#202d33] dark:bg-[#202d33]"}>
             { userName === "" ? 
             <li>
                 <Link to="/login" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Login</Link>
             </li>
-            : 
+            :
+            <>
             <li>
                 <Link onClick={(e) => handleLogout(e)} to="/home" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Logout</Link>
             </li>
-
-            } 
+            <li>
+            <Link to="/your-rooms" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Your Rooms</Link>
+             </li>
+             </>
+            }
             <li>
                 <Link to="/feed" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Feed</Link>
             </li>
+            
 
         </ul>
         </div>

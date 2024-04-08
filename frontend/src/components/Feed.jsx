@@ -29,26 +29,25 @@ function Feed() {
         setMessages(newMessages);
         });
     }, []);
+    useEffect(() => {
+        if(!endOfListRef.current) return
+        if (endOfListRef) {
+        const isScrolledToBottom = endOfListRef.current.getBoundingClientRect().bottom <= window.innerHeight-100;
+        if (isScrolledToBottom && !endOfListRef.current) {
+            endOfListRef.current.scrollIntoView({behavior: 'smooth'});
+        }
+        }
+    }, [endOfListRef]);
 
-    // Scroll to bottom once new message is retrieved if was already scrolled to bottom
-    // useEffect(() => {
-    //     if (endOfListRef) {
-    //     const isScrolledToBottom = endOfListRef.current.getBoundingClientRect().bottom <= window.innerHeight;
-    //     if (isScrolledToBottom) {
-    //         endOfListRef.current.scrollIntoView({behavior: 'smooth'});
-    //     }
-    //     }
-    // }, [endOfListRef]);
-
-    // // Scroll to bottom once all messages are loaded
-    // const areMessagesLoaded = messages.length > 0;
-    // useEffect(() => {
-    //     if (endOfListRef) {
-    //     endOfListRef.current.scrollIntoView({behavior: 'smooth'});
-    //     }
-    //     // dependencies do not contain endOfListRef as it shall only be triggered once all messages are loaded and not when endOfListRef gets updated
-    //     // eslint-disable-next-line
-    // }, [areMessagesLoaded]);
+    // Scroll to bottom once all messages are loaded
+    const areMessagesLoaded = messages.length > 0;
+    useEffect(() => {
+        if (endOfListRef.current) {
+        endOfListRef.current.scrollIntoView({behavior: 'smooth'});
+        }
+        // dependencies do not contain endOfListRef as it shall only be triggered once all messages are loaded and not when endOfListRef gets updated
+        // eslint-disable-next-line
+    }, [areMessagesLoaded]);
 
 
     

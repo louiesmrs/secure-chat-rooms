@@ -1,24 +1,38 @@
 package tcd.ie.securesocial.service;
 
 import tcd.ie.securesocial.model.Message;
+import tcd.ie.securesocial.model.Room;
 import tcd.ie.securesocial.repository.MessageRepository;
+import tcd.ie.securesocial.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
 
+import com.fasterxml.jackson.databind.JsonSerializable.Base;
+
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
 import static java.util.stream.Collectors.toList;
+
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
 @Service
 @RequiredArgsConstructor
 public class MessageService {
 
     private final MessageRepository messageRepository;
+    private final RoomRepository roomRepository;
 
     public MessageDto saveMessage(MessageDto uiMessage) {
         Message message = Message.builder()
@@ -28,6 +42,7 @@ public class MessageService {
                 .timestamp(LocalDateTime.now())
                 .chatcolor(HtmlUtils.htmlEscape(uiMessage.getChatColor()))
                 .build();
+        message.setMessage(encryptMessage(message.getMessage(), message.getRoomname());
         Message savedMessage = messageRepository.save(message);
         return MessageDto.fromMessage(savedMessage);
     }
@@ -49,5 +64,15 @@ public class MessageService {
                 .sorted(Comparator.comparing(Message::getTimestamp))
                 .map(MessageDto::fromMessage)
                 .collect(toList());
+    }
+
+    public String encryptMessage(String message, String roomName) throws NoSuchAlgorithmException,
+     NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        Room room = roomRepository.findByRoomname(roomName)
+                .orElseThrow(() -> new IllegalArgumentException("Room does not exist"));
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.ENCRYPT_MODE, room.getKeys().get(room.getKeys().size()-1).getPrivateKey());
+        byte[] encryptedMessage = cipher.doFinal(message.getBytes());
+        return Base64.getEncoder().encodeToString(encryptedMessage);
     }
 }

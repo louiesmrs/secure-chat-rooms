@@ -6,6 +6,7 @@ import Signup from './components/Signup';
 import Home from './components/Home';
 import Feed from './components/Feed';
 import Chat from './components/Chat';
+import CurrentRooms from './components/CurrentRooms';
 function App() {
   
   return (
@@ -14,6 +15,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/your-rooms" element={<CurrentRooms />} />
           <Route path="/chat/:id" element={<Chat />} />
           <Route path="/feed" element={<Feed />} />
           <Route path="/login" element={<Login />}/>

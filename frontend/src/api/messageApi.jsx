@@ -19,6 +19,14 @@ export function loadRoomByName(roomName) {
     return axios.get(`${BASE_URL}/room/${roomName}`);
 }
 
+export function postLockRoom(roomName) {
+    return axios.post(`${BASE_URL}/lockroom/${roomName}`);
+}
+
+export function postUnlockRoom(roomName) {
+    return axios.post(`${BASE_URL}/unlockroom/${roomName}`);
+}
+
 export function postRoom(roomName) {
     const formData = new FormData();
     formData.append('roomName', roomName);

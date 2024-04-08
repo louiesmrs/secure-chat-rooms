@@ -17,6 +17,7 @@ public class RoomDto implements Serializable {
 
     private int numberMembers;
     private String roomName;
+    private boolean locked;
 
   
 
@@ -24,6 +25,7 @@ public class RoomDto implements Serializable {
         return RoomDto.builder()
                 .roomName(room.getRoomname())
                 .numberMembers(room.getNumbermembers())
+                .locked(room.isLocked())
                 .build();
     }
 

@@ -36,6 +36,18 @@ public class RoomController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/lockroom/{roomName}")
+    public ResponseEntity<Void> lockRoom(@PathVariable String roomName) {
+        roomService.lockRoom(roomName);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/unlockroom/{roomName}")
+    public ResponseEntity<Void> unlockRoom(@PathVariable String roomName) {
+        roomService.unlockRoom(roomName);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/room")
     public ResponseEntity<List<RoomDto>> getAllRooms() {
         List<RoomDto> rooms = roomService.getAllRooms();
@@ -46,5 +58,6 @@ public class RoomController {
     public ResponseEntity<RoomDto> getRoomByName(@PathVariable String roomName) {
         return ResponseEntity.ok(roomService.getRoomByName(roomName));
     }
+
 
 }
