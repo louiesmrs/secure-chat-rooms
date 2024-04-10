@@ -2,6 +2,7 @@
 import axios from 'axios';
 import {BASE_URL} from './baseApi';
 import {getOrCreateStompClient} from './stompClient';
+import { number } from 'sockjs-client/lib/utils/random';
 
 export function loadMessages() {
   return axios.get(`${BASE_URL}/message`);
@@ -27,19 +28,31 @@ export function postUnlockRoom(roomName) {
     return axios.post(`${BASE_URL}/unlockroom/${roomName}`);
 }
 
-export function postRoom(roomName) {
+export function postRoom(roomName, username) {
     const formData = new FormData();
-    formData.append('roomName', roomName);
+    formData.append('roomname', roomName);
+    formData.append('username', username);
     formData.append('numberMembers', 1);
-    return axios.post(`${BASE_URL}/room`, formData);
+    return axios({
+      method: 'post',
+      url: `${BASE_URL}/room`,
+      data: formData,
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
 }
 
-export function postJoinRoom(roomName) {
-    return axios.post(`${BASE_URL}/joinroom/${roomName}`);
+export function postJoinRoom(roomName, username) {
+  const values = {
+    username: username
+  }
+  return axios.post(`${BASE_URL}/joinroom/${roomName}`, values);
 }
 
-export function postLeaveRoom(roomName) {
-    return axios.post(`${BASE_URL}/leaveroom/${roomName}`);
+export function postLeaveRoom(roomName, username) {
+const values = {
+    username: username
+  }
+  return axios.post(`${BASE_URL}/leaveroom/${roomName}`, values);
 }
 
 export function subscribeOnNewMessages(onNewMessage) {

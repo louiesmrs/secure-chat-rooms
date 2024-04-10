@@ -12,8 +12,8 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "user")
-public class User {
+@Table(name = "account")
+public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -25,15 +25,15 @@ public class User {
     @Column(name = "password", nullable = false, length = 100)
     private String password;
 
-    @Column(name = "cert" , nullable = false, length = 100)
-    private X509Certificate cert;
+    // @Column(name = "cert" , nullable = false, length = 100)
+    // private X509Certificate cert;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST,
+    @ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST,
          CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH }) 
-    @JoinTable(name = "USER_ROOM_MAPPING", joinColumns = @JoinColumn(name = "USER_ID"), inverseJoinColumns = @JoinColumn(name = "ROOM_ID"))
+    @JoinTable(name = "ACCOUNT_ROOM_MAPPING", joinColumns = @JoinColumn(name = "ACCOUNT_ID"), inverseJoinColumns = @JoinColumn(name = "ROOM_ID"))
     private Set<Room> rooms;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "account", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<UserKey> keys;
 
 
@@ -51,7 +51,7 @@ public class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        User account = (User) o;
+        Account account = (Account) o;
 
         if (!id.equals(account.id)) return false;
         return username.equals(account.username);

@@ -76,7 +76,7 @@ useEffect(() => {
      }
 
   return (
-    <AuthContext.Provider value={{ userName, setUserName, logout, groups, setGroups, leaveGroup, chatColor, setChatColor, firstMessage, setFirstMessage }}>
+    <AuthContext.Provider value={{ userName, setUserName, logout, groups, setGroups, leaveGroup, chatColor, setChatColor, firstMessage, setFirstMessage, setCert, cert, setPrivateKey, privateKey }}>
       {children}</AuthContext.Provider>
   );
 };

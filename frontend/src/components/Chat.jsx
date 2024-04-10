@@ -35,8 +35,9 @@ function Chat() {
     
     
     useEffect(() => {
-        
-        axios.get(`${BASE_URL}/key`, userName)
+        console.log(title);
+        console.log(userName);
+        axios.get(`${BASE_URL}/getKeys/${userName}/${title}`)
         .then((response) => {
             console.log(response);
             setKeys(response.data);
@@ -110,15 +111,48 @@ function Chat() {
     }
 
 
-    const decryptMessage = (message) => {
+    const decryptMessage = async(message) => {
+        console.log(message);
+        console.log(keys);
         const key = keys.find((key) => key.keyID === message.keyID);
         if (key) {
-            const publicKey = forge.pki.publicKeyFromPem(key.publicKey);
-            const decryptedMessage = publicKey.decrypt(message.content);
-            message.content = decryptedMessage;
+            var publicKeyAB = str2ab(atob(key.publicKey)); 
+            console.log(publicKeyAB);
+            //import key to encrypt with RSA-OAEP   
+            crypto.subtle.importKey(
+                 "spki",    
+                  publicKeyAB, 
+                  { name: "RSA-OAEP", hash: {name: "SHA-256"}}, 
+                  false,
+                  ["encrypt"])
+            .then(function(key){
+                console.log(key);
+                //decrypt message with RSA-OAEP
+                crypto.subtle.decrypt(
+                    {
+                        name: "RSA-OAEP"
+                    },
+                    key,
+                    new Uint8Array(message.content)
+                )
+                .then(function(decrypted){
+                    console.log(new TextDecoder().decode(decrypted));
+                    message.content = new TextDecoder().decode(decrypted);
+                });               
+            }).catch(function(err) {
+                console.log(err );
+            }); 
         } 
         return message;
     }
+    function str2ab(str) {
+        var arrBuff = new ArrayBuffer(str.length);
+        var bytes = new Uint8Array(arrBuff);
+        for (var iii = 0; iii < str.length; iii++) {
+          bytes[iii] = str.charCodeAt(iii);
+        }
+        return bytes;
+      }
     //Scroll to bottom once new message is retrieved if was already scrolled to bottom
     console.log(messages);
     useEffect(() => {
@@ -162,7 +196,7 @@ function Chat() {
 
     const leaveRoom = () => {
         console.log(title);
-        postLeaveRoom(title)
+        postLeaveRoom(title, userName)
         .then((response) => {
             // @ts-ignore
             leaveGroup(title);

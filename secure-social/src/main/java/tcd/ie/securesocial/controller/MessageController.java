@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 
 import javax.crypto.BadPaddingException;
@@ -27,7 +28,7 @@ public class MessageController {
     @MessageMapping("/message/{roomName}")
     @SubscribeMapping("/message/{roomName}")
     @SendTo("/topic/message/{roomName}")
-    public MessageDto postMessage(MessageDto messageDto) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+    public MessageDto postMessage(MessageDto messageDto) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
         System.out.println("Message Received");
         System.out.println(messageDto);
         return messageService.saveMessage(messageDto);

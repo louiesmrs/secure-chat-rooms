@@ -4,18 +4,21 @@ import tcd.ie.securesocial.model.Room;
 import tcd.ie.securesocial.model.RoomKey;
 import tcd.ie.securesocial.repository.MessageRepository;
 import tcd.ie.securesocial.repository.RoomRepository;
-import tcd.ie.securesocial.repository.UserRepository;
+import tcd.ie.securesocial.repository.AccountRepository;
 import tcd.ie.securesocial.repository.RoomKeyRepository;
 import lombok.RequiredArgsConstructor;
 
-import tcd.ie.securesocial.model.User;
+import tcd.ie.securesocial.model.Account;
 import tcd.ie.securesocial.model.UserKey;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.HtmlUtils;
 
+import java.util.Base64;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
@@ -33,13 +36,20 @@ public class RoomService {
     private final RoomRepository roomRepository;
     private final MessageRepository messageRepository;
     private final RoomKeyRepository RoomKeyRepository;
-    private final UserRepository userRepository;
+    private final AccountRepository accountRepository;
 
-    public RoomDto saveRoom(RoomDto uiRoom) throws NoSuchAlgorithmException {
+    public RoomDto saveRoom(RoomDto uiRoom, String username) throws NoSuchAlgorithmException {
+        Account user = accountRepository.findByUsername(username)
+            .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
+        if (roomRepository.existsByRoomname(uiRoom.getRoomName())) {
+            throw new IllegalArgumentException("Room already exists: " + uiRoom.getRoomName());
+        }
         Room room = Room.builder()
-                .roomname(HtmlUtils.htmlEscape(uiRoom.getRoomName()))
-                .numbermembers(uiRoom.getNumberMembers())
-                .build();
+            .roomname(HtmlUtils.htmlEscape(uiRoom.getRoomName()))
+            .numbermembers(uiRoom.getNumberMembers())
+            .locked(uiRoom.isLocked())
+            .users(new HashSet<>(Collections.singletonList(user))) // Fix: Create a new HashSet and add the user to it
+            .build();
         Room savedRoom = roomRepository.save(room);
         genNewRoomKey(savedRoom);
         return RoomDto.fromRoom(savedRoom);
@@ -59,6 +69,7 @@ public class RoomService {
         System.out.println("Room Name: " + roomName);
         Room room = roomRepository.findByRoomname(roomName)
                 .orElseThrow(() -> new IllegalArgumentException("Room does not exist"));
+        System.out.println("Room: " + room);
         return RoomDto.fromRoom(room);
     }
 
@@ -73,10 +84,10 @@ public class RoomService {
         Room room = roomRepository.findByRoomname(roomName)
                 .orElseThrow(() -> new IllegalArgumentException("Room does not exist"));
         roomRepository.incrementNumberMembers(roomName);
-        User user = userRepository.findByUsername(username)
+        Account user = accountRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
         user.getRooms().add(room);
-        userRepository.save(user); 
+        accountRepository.save(user); 
         genNewRoomKey(room);
     }
 
@@ -85,16 +96,16 @@ public class RoomService {
         System.out.println("Leaving Room: " + roomName);
         Room room = roomRepository.findByRoomname(roomName)
                 .orElseThrow(() -> new IllegalArgumentException("Room does not exist"));
-        User user = userRepository.findByUsername(username)
+        Account user = accountRepository.findByUsername(username)
         .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
         if (room.getNumbermembers() > 1) {
             roomRepository.decrementNumberMembers(roomName);
             user.getRooms().remove(room);
-            userRepository.save(user); 
+            accountRepository.save(user); 
             genNewRoomKey(room);
         } else {
             user.getKeys().removeIf(k -> k.getRoomname().equals(roomName));
-            userRepository.save(user);
+            accountRepository.save(user);
             roomRepository.delete(room);
             messageRepository.deleteByRoomname(roomName);
         }
@@ -128,26 +139,26 @@ public class RoomService {
         keyPairGenerator.initialize(2048);
         KeyPair keyPair = keyPairGenerator.generateKeyPair();   
         RoomKey newKey = RoomKey.builder()
-                .publicKey(keyPair.getPublic())
-                .privateKey(keyPair.getPrivate())
+                .publicKey(Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()))
+                .privateKey(Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded()))
                 .room(room)
                 .build();
         RoomKeyRepository.save(newKey);
-        for(User u : room.getUsers()){
+        for(Account u : room.getUsers()){
            u.getKeys().add(
             UserKey.builder()
             .publicKey(newKey.getPublicKey())
             .roomname(room.getRoomname())
             .keyID(newKey.getId())
-            .user(u)
+            .account(u)
             .build()
             );
-           userRepository.save(u); 
+           accountRepository.save(u); 
         }
     }
 
     public List<UserKey> getUserKeysByRoom(String roomName, String username) {
-        User user = userRepository.findByUsername(username)
+        Account user = accountRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
         return user.getKeys().stream()
                 .filter(k -> k.getRoomname().equals(roomName))

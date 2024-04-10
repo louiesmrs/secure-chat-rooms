@@ -19,8 +19,8 @@ public class UserKey{
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "publicKey" , nullable = false, length = 100)
-    private Key publicKey;
+    @Column(name = "publicKey" , nullable = false, columnDefinition = "LONGTEXT")
+    private String publicKey;
 
     @Column(name = "roomname" , nullable = false, length = 100)
     private String roomname;
@@ -28,9 +28,9 @@ public class UserKey{
     @Column(name = "keyID" , nullable = false, length = 100)
     private Long keyID;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "account_id")
+    private Account account;
     
     
 

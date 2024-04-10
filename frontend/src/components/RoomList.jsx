@@ -30,7 +30,7 @@ function RoomList() {
     const handleAddRoom = (e) => {
         e.preventDefault();
         if(addRoom !== "" && userName !== "") {
-            postRoom(addRoom)
+            postRoom(addRoom, userName)
             .then(() => {
                 loadRooms()
                 .then((response) => {
@@ -55,7 +55,7 @@ function RoomList() {
             alert("Please login to join a room");
             return;
         }
-        postJoinRoom(roomName)
+        postJoinRoom(roomName, userName)
         .then(() => {
             setGroups([...groups, roomName]);
             console.log(userName, roomName);

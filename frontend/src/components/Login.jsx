@@ -26,7 +26,7 @@ export default function Login() {
             axios.post(`${BASE_URL}/auth/login`, values)
             .then((response) => {
                 console.log(response);
-                setUserName(response.data.username);
+                setUserName(username);
                 setChatColor(options[Math.floor(Math.random() * options.length)]);
                 navigate(`/home`);
                 })

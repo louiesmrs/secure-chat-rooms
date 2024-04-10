@@ -25,7 +25,10 @@ import javax.crypto.NoSuchPaddingException;
 import static java.util.stream.Collectors.toList;
 
 import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +37,7 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final RoomRepository roomRepository;
 
-    public MessageDto saveMessage(MessageDto uiMessage) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+    public MessageDto saveMessage(MessageDto uiMessage) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
         String crypto = encryptMessage(uiMessage.getContent(), uiMessage.getRoomName());
         Long keyId = getRoomKeyId(uiMessage.getRoomName());
         Message message = Message.builder()
@@ -69,11 +72,14 @@ public class MessageService {
     }
 
     public String encryptMessage(String message, String roomName) throws NoSuchAlgorithmException,
-     NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+     NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
         Room room = roomRepository.findByRoomname(roomName)
                 .orElseThrow(() -> new IllegalArgumentException("Room does not exist"));
         Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.ENCRYPT_MODE, room.getKeys().get(room.getKeys().size()-1).getPrivateKey());
+        byte[] key = Base64.getDecoder().decode(room.getKeys().get(room.getKeys().size()-1).getPrivateKey());
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(key);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        cipher.init(Cipher.ENCRYPT_MODE, kf.generatePrivate(spec));
         byte[] encryptedMessage = cipher.doFinal(message.getBytes());
         return Base64.getEncoder().encodeToString(encryptedMessage);
     }

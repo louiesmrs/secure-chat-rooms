@@ -19,11 +19,11 @@ public class RoomKey{
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "publicKey" , nullable = false, length = 100)
-    private Key publicKey;
+    @Column(name = "publicKey" , nullable = false, columnDefinition = "LONGTEXT")
+    private String publicKey;
 
-    @Column(name = "privateKey" , nullable = false, length = 100)
-    private Key privateKey;
+    @Column(name = "privateKey" , nullable = false, columnDefinition = "LONGTEXT")
+    private String privateKey;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")

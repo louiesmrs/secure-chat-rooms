@@ -24,7 +24,7 @@ public class Message {
     @Column(name = "username", nullable = false, length = 30)
     private String username;
 
-    @Column(name = "message", nullable = false)
+    @Column(name = "message", nullable = false , columnDefinition = "LONGTEXT")
     private String message;
 
     @Column(name = "timestamp", nullable = false)

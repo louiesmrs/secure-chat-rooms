@@ -4,7 +4,6 @@ import java.security.cert.X509Certificate;
 
 public record AuthDto(
         String username,
-        String password,
-        X509Certificate cert
+        String password
 ) {
 }

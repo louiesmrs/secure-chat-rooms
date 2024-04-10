@@ -30,7 +30,7 @@ export default function Login() {
             axios.post(`${BASE_URL}/auth/register`, values)
             .then((response) => {
                 console.log(response);
-                setUserName(response.data.username);
+                setUserName(username);
                 setCert(cert);
                 setPrivateKey(keys.privateKey);
                 setChatColor(options[Math.floor(Math.random() * options.length)]);

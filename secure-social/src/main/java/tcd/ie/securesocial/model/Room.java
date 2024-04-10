@@ -35,12 +35,12 @@ public class Room{
     @Column(name = "locked", nullable = false)
     private boolean locked;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST,
+    @ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST,
             CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
-    @JoinTable(name = "USER_ROOM_MAPPING", joinColumns = @JoinColumn(name = "ROOM_ID"), inverseJoinColumns = @JoinColumn(name = "USER_ID"))
-    private Set<User> users;
+    @JoinTable(name = "ACCOUNT_ROOM_MAPPING", joinColumns = @JoinColumn(name = "ROOM_ID"), inverseJoinColumns = @JoinColumn(name = "ACCOUNT_ID"))
+    private Set<Account> users;
 
-    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "room", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<RoomKey> keys;
     
 }
