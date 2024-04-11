@@ -73,10 +73,16 @@ public class RoomController {
         return ResponseEntity.ok(roomService.getRoomByName(roomName));
     }
 
-    @GetMapping("/getKeys/{username}/{roomName}")
-    public ResponseEntity<List<UserKeyDto>> getKeys(@PathVariable String username, @PathVariable String roomName) {
-        return ResponseEntity.ok(roomService.getUserKeysByRoom(roomName, username));
+    @PostMapping("/getKeys")
+    public ResponseEntity<List<UserKeyDto>> getKeys(@RequestParam("username") String username, @RequestParam("roomName") String roomName, @RequestParam("cert") String cert) {
+        return ResponseEntity.ok(roomService.getUserKeysByRoom(roomName, username, cert));
     }
+
+    @GetMapping("/rooms/{username}")
+    public ResponseEntity<List<RoomDto>> getRoomsByUser(@PathVariable String username) {
+        return ResponseEntity.ok(roomService.getRoomsByUser(username));
+    }
+    
     
 
 

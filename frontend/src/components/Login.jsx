@@ -4,11 +4,12 @@ import {Link, useNavigate} from 'react-router-dom';
 import { AuthContext } from './AuthUtil';
 import Navbar from './Navbar';
 import { BASE_URL } from '../api/baseApi';
+import { genCACert} from './Signup';
 
 export default function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const {setUserName, setChatColor, cert} = useContext(AuthContext);
+    const {setUserName, setChatColor, setPrivateKey, setCert, cert} = useContext(AuthContext);
     const navigate = useNavigate();
 
     const options = ["text-fuchsia-500", "text-blue-500", "text-yellow-500", 
@@ -18,21 +19,29 @@ export default function Login() {
     const handleSubmit = (e) => {
         e.preventDefault();
         if(username && password) {
+            const ca = genCACert();
+            // @ts-ignore
+
+
             const values = {
                 username: username,
                 password: password,
-                cert : cert
+                cert : ca.ca.cert
             }
             axios.post(`${BASE_URL}/auth/login`, values)
             .then((response) => {
                 console.log(response);
                 setUserName(username);
+                setCert(ca.ca.cert);
+                // @ts-ignore
+                setPrivateKey(ca.ca.key);   
                 setChatColor(options[Math.floor(Math.random() * options.length)]);
                 navigate(`/home`);
                 })
             .catch(function (error) {
                 // handle error
                 console.log(error);
+                alert(error.response.data.message)
             }); 
         }
     }

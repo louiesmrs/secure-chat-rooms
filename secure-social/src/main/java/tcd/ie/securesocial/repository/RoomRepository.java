@@ -25,4 +25,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     @Modifying
     @Query("update Room r set r.locked = false where r.roomname = ?1")
     void unlockRoom(String roomname);
+    @Modifying
+    @Query("delete from Room r where r.roomname = ?1")
+    void deleteByRoomname(String roomname);
 }

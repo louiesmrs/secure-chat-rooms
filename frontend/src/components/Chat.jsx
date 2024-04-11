@@ -15,6 +15,7 @@ import { getOrCreateStompClient } from "../api/stompClient";
 import forge from "node-forge/lib/forge";
 import axios from "axios";
 import { BASE_URL } from "../api/baseApi";
+import { privateKeyFromPem } from "node-forge/lib/pki";
 function Chat() {
     const title = useParams().id;
 
@@ -30,14 +31,23 @@ function Chat() {
     const [keys, setKeys] = useState([]);
     const endOfListRef = createRef();
     const stateRef = useRef();
-    const {userName, leaveGroup, chatColor, firstMessage, setFirstMessage } = useContext(AuthContext);
+    const {userName, leaveGroup, chatColor, firstMessage, setFirstMessage, cert, privateKey} = useContext(AuthContext);
     const navigate = useNavigate();
     
     
     useEffect(() => {
         console.log(title);
         console.log(userName);
-        axios.get(`${BASE_URL}/getKeys/${userName}/${title}`)
+        const formData = new FormData();
+        formData.append('username', userName);
+        formData.append('roomName', title);
+        formData.append('cert', cert)
+        axios({
+            method: 'post',
+            url: `${BASE_URL}/getKeys`,
+            data: formData,
+            headers: { 'Content-Type': 'multipart/form-data' }
+        })
         .then((response) => {
             console.log(response.data);
             setKeys(response.data);
@@ -113,7 +123,16 @@ function Chat() {
                 console.warn(error);
             });
         }
-        axios.get(`${BASE_URL}/getKeys/${userName}/${title}`)
+        const formData = new FormData();
+        formData.append('username', userName);
+        formData.append('roomName', title);
+        formData.append('cert', cert)
+        axios({
+            method: 'post',
+            url: `${BASE_URL}/getKeys`,
+            data: formData,
+            headers: { 'Content-Type': 'multipart/form-data' }
+        })
         .then((response) => {
             console.log(response.data);
             setKeys(response.data);
@@ -173,6 +192,7 @@ function Chat() {
         e.preventDefault();
         if(userName !== "") {
             if(message !== "") {
+                //let encryptedMessage = privateKeyFromPem(privateKey).encrypt(forge);
                 postMessage({userName, message, room, chatColor: chatColor});
                 
             } else {
@@ -194,7 +214,10 @@ function Chat() {
         .then((response) => {
             // @ts-ignore
             leaveGroup(title);
-            postSystemMessage({message: `${userName} has left the room`, roomName: title});
+            // @ts-ignore
+            if(room.numberMembers > 1) {
+                postSystemMessage({message: `${userName} has left the room`, roomName: title});
+            }
             navigate(`/home`);
     });
     }

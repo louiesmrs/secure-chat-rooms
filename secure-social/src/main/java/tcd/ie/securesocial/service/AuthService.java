@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
@@ -22,10 +23,13 @@ public class AuthService {
         Account account = Account.builder()
                 .username(request.username())
                 .password(passwordEncoder.encode(request.password()))
+                .cert(request.cert())
                 .build();
         accountRepository.save(account);
     }
 
+
+    @Transactional
     public void login(AuthDto request) {
         if(!accountRepository.existsByUsername(request.username())){
             throw new IllegalArgumentException("Username does not exist: " + request.username());
@@ -34,15 +38,16 @@ public class AuthService {
         if (!passwordEncoder.matches(request.password(), account.getPassword())) {
             throw new IllegalArgumentException("Invalid password");
         }
-        // if(!request.cert().equals(account.getCert())){
-        //     throw new IllegalArgumentException("Invalid cert");
-        // }
+        accountRepository.updateCert(request.username(), request.cert());
+        
     }
 
     public Account getByUsername(String username) {
         return accountRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Username not found: " + username));
     }
+
+    
 
 
 }

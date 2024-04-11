@@ -1,6 +1,8 @@
 // @ts-nocheck
 import { useState,  createContext, useEffect } from "react";
 import './typedef'
+import axios from 'axios';
+import { BASE_URL } from "../api/baseApi";
 
 export const AuthContext = createContext();
 export const AuthProvider = ({children }) => {
@@ -12,7 +14,14 @@ export const AuthProvider = ({children }) => {
   });
   const [groups, setGroups] = useState(() => {
     const saved = JSON.parse(localStorage.getItem("groups"));
-    return saved || [];  
+    return saved || axios.get(`${BASE_URL}/rooms/${userName}`).then((response) => {
+      return response.data
+    })
+    .catch((error) => {
+      console.warn(error);
+      alert("Error fetching rooms");
+    }
+    );  
 });
 
   const [chatColor, setChatColor] = useState(() => {

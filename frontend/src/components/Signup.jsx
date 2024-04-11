@@ -5,6 +5,8 @@ import { AuthContext } from './AuthUtil';
 import Navbar from './Navbar';
 import forge from 'node-forge';
 import { BASE_URL } from '../api/baseApi';
+import { Buffer } from 'buffer';
+import { v4 as uuidv4 } from 'uuid';
 export default function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -17,28 +19,29 @@ export default function Login() {
     const handleSubmit = (e) => {
         e.preventDefault();
         if(username && password) {
-            var keys = forge.pki.rsa.generateKeyPair({bits: 2048});
-            var cert = forge.pki.createCertificate();
-            console.log(cert);
-            console.log(keys);
+            const ca = genCACert();
+            // @ts-ignore
+            console.log(ca);
 
             const values = {
                 username: username,
                 password: password,
-                cert: cert.toString(),
+                cert: ca.ca.cert
             }
             axios.post(`${BASE_URL}/auth/register`, values)
             .then((response) => {
                 console.log(response);
                 setUserName(username);
-                setCert(cert);
-                setPrivateKey(keys.privateKey);
+                setCert(ca.ca.cert);
+                // @ts-ignore
+                setPrivateKey(ca.ca.key);
                 setChatColor(options[Math.floor(Math.random() * options.length)]);
                 navigate(`/home`);
                 })
             .catch(function (error) {
                 // handle error
                 console.log(error);
+                alert(error.response.data.message)
             }); 
         }
     }
@@ -93,4 +96,41 @@ export default function Login() {
         </div>
         </>
     )
+}
+
+
+export function genCACert(options = {}) {
+    options = {...{
+        commonName: 'Testing CA - DO NOT TRUST',
+        bits: 2048
+    }, ...options}
+    
+    // let keyPair = await new Promise((res, rej) => {
+    //     forge.pki.rsa.generateKeyPair({ bits: options.bits }, (error, pair) => {
+    //         if (error) rej(error);
+    //         else res(pair)
+    //     })
+    // })
+    let keyPair = forge.pki.rsa.generateKeyPair({ bits: options.bits })
+    
+    let cert = forge.pki.createCertificate()
+    cert.publicKey = keyPair.publicKey
+    cert.serialNumber = uuidv4();
+    cert.validity.notBefore = new Date()
+    cert.validity.notBefore.setDate(cert.validity.notBefore.getDate() - 1)
+    cert.validity.notAfter = new Date()
+    cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1)
+    
+    cert.setSubject([{name: 'commonName', value: options.commonName}])
+    cert.setExtensions([{ name: 'basicConstraints', cA: true }])
+    
+    cert.setIssuer(cert.subject.attributes)
+    cert.sign(keyPair.privateKey, forge.md.sha256.create())
+    
+    return {
+        ca: {
+            key: forge.pki.privateKeyToPem(keyPair.privateKey),
+            cert: forge.pki.certificateToPem(cert)
+        }
+    }
 }

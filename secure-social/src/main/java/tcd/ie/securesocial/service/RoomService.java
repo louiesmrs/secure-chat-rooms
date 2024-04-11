@@ -77,7 +77,7 @@ public class RoomService {
     }
 
     public void memberJoin(String roomName, String username) throws NoSuchAlgorithmException {
-        System.out.println("" + username + "Joining Room: " + roomName);
+        System.out.println("" + username + " Joining Room: " + roomName);
 
         if(!roomRepository.existsByRoomname(roomName)){
             throw new IllegalArgumentException("Room does not exist");
@@ -91,26 +91,30 @@ public class RoomService {
         Account user = accountRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
         room.getUsers().add(user);
+         
         roomRepository.save(room);
         genNewRoomKey(room);
     }
 
     @Transactional
     public void memberLeave(String roomName, String username) throws NoSuchAlgorithmException {
-        System.out.println("" + username + "Leaving Room: " + roomName);
+        System.out.println("" + username + " Leaving Room: " + roomName);
         Room room = roomRepository.findByRoomname(roomName)
                 .orElseThrow(() -> new IllegalArgumentException("Room does not exist"));
         Account user = accountRepository.findByUsername(username)
-        .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
+                .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
+        System.out.println("Room Members: " + room.getNumbermembers());
         if (room.getNumbermembers() > 1) {
             roomRepository.decrementNumberMembers(roomName);
             room.getUsers().remove(user);
             roomRepository.save(room);
             genNewRoomKey(room);
         } else {
+            System.out.println("Deleting Room: " + roomName);
             user.getKeys().removeIf(k -> k.getRoomname().equals(roomName));
             accountRepository.save(user);
-            roomRepository.delete(room);
+            RoomKeyRepository.deleteByRoom(room);
+            roomRepository.deleteByRoomname(roomName);
             messageRepository.deleteByRoomname(roomName);
         }
     }
@@ -160,12 +164,24 @@ public class RoomService {
         userKeyRepository.save(userKey); 
     }
 
-    public List<UserKeyDto> getUserKeysByRoom(String roomName, String username) {
+    public List<UserKeyDto> getUserKeysByRoom(String roomName, String username, String cert) {
         Account user = accountRepository.findByUsername(username)
             .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
+        if(!user.getCert().equals(cert)){
+            throw new IllegalArgumentException("Invalid certificate");
+        }
         return user.getKeys().stream()
             .filter(k -> k.getRoomname().equals(roomName))
             .map(UserKeyDto::fromUserKey) 
             .collect(toList());
+    }
+
+
+    public List<RoomDto> getRoomsByUser(String username) {
+        Account user = accountRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
+        return user.getRooms().stream()
+                .map(RoomDto::fromRoom)
+                .collect(toList());
     }
 }
