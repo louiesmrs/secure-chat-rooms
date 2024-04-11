@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Home</title>
+    <title>JSDoc: Source: components/typedef.jsx</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,45 +17,43 @@
 
 <div id="main">
 
-    <h1 class="page-title">Home</h1>
+    <h1 class="page-title">Source: components/typedef.jsx</h1>
 
     
 
 
 
     
-
-
-    <h3> </h3>
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
     <section>
-        <article><h1>SwengGroup12</h1>
-<p>Optimised Live Video Analytics at Scale (TCD Software Engineering Project)</p>
-<h2>Steps to run the application</h2>
-<ol>
-<li>Run <code>docker compose up --build</code> from the repository root (the folder with the compose.yaml file).</li>
-<li>Go to <a href="/frontend">/frontend</a> folder.</li>
-<li>Run <code>npm install</code>.</li>
-<li>Run <code>npm run dev</code>.</li>
-<li>Go to <a href="http:%5C/%5C/localhost:3000/">http://localhost:3000/</a> to access the app.</li>
-</ol></article>
+        <article>
+            <pre class="prettyprint source linenums"><code>
+/**
+ * @typedef {Object} room
+ * @property {string} roomName
+ * @property {number} numberMembers
+ * @property {boolean} locked
+ * 
+ * */
+
+
+/** 
+ * @typedef {Object} message
+ * @property {string} content
+ * @property {string} userName
+ * @property {string} roomName
+ * @property {string} chatColor
+ * @property {string} timestamp
+ * @property {number} keyID
+ */
+
+
+/**
+ * @typedef {Object} decryptionKey
+ * @property {string} publicKey 
+ * @property {number} keyID
+ */</code></pre>
+        </article>
     </section>
-
-
 
 
 

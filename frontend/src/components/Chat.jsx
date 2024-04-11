@@ -1,3 +1,4 @@
+// @ts-nocheck
 
 import { createRef, useEffect, useRef, useState, useContext, useMemo } from "react";
 // @ts-ignore
@@ -15,19 +16,22 @@ import { getOrCreateStompClient } from "../api/stompClient";
 import forge from "node-forge/lib/forge";
 import axios from "axios";
 import { BASE_URL } from "../api/baseApi";
-import { privateKeyFromPem } from "node-forge/lib/pki";
+import "./typedef";
 function Chat() {
     const title = useParams().id;
 
     /**
-     * @typedef {Object} room
-     * @property {string} roomName
-     * @property {number} numberMembers
-     * @property {boolean} locked
+     * @type {room} 
      */
     const [room, setRoom] = useState({});
+    /**
+     * @type {message[]} 
+     */
     const [messages, setMessages] = useState([]);
     const [message, setMessage] = useState("");
+    /**
+     * @type {decryptionKey[]} 
+     */
     const [keys, setKeys] = useState([]);
     const endOfListRef = createRef();
     const stateRef = useRef();
