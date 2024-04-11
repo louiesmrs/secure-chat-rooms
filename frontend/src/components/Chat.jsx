@@ -39,14 +39,15 @@ function Chat() {
         console.log(userName);
         axios.get(`${BASE_URL}/getKeys/${userName}/${title}`)
         .then((response) => {
-            console.log(response);
+            console.log(response.data);
             setKeys(response.data);
+            loadMessages(response.data);
         })
         .catch(function (error) {
             console.log(error);
         });
 
-    }, [messages]);
+    }, []);
 
     // @ts-ignore
     stateRef.current = {messages};
@@ -60,14 +61,14 @@ function Chat() {
     }, []);
     
     // load new messages upon component mounting once setMessages dependency is present
-    useEffect(() => {
+    const loadMessages = (keys) => {
         // @ts-ignore
         loadMessagesRoom(title)
         .then((response) => {
             const data = response.data;
             let newMessages = [];
             for(let i = 0; i < data.length; i++) {
-                newMessages.push(decryptMessage(data[i]));
+                newMessages.push(decryptMessage(data[i], keys));
             }
             setMessages(newMessages);
             // @ts-ignore
@@ -75,7 +76,7 @@ function Chat() {
     
             // @ts-ignore
         });
-    }, [setMessages]);
+    };
    
 
     useEffect(() => {
@@ -84,7 +85,7 @@ function Chat() {
             setRoom(response.data);
         }
         );
-    }, [messages]);
+    }, []);
 
 
     // subscribe on new messages when component mounts
@@ -99,62 +100,55 @@ function Chat() {
     }, []);
 
 
-    const onNewMessage = (response) => {
-        console.log(JSON.parse(response.body));
+    const onNewMessage = (wsResponse) => {
+        console.log(JSON.parse(wsResponse.body));
         console.log(messages);
-        // @ts-ignore
-        let newMesages = [...stateRef.current.messages];
-        const message = decryptMessage(JSON.parse(response.body));
-        newMesages.push(message);
-        console.log(newMesages);
-        setMessages(newMesages);
+        if(JSON.parse(wsResponse.body).userName !== userName) {
+            loadRoomByName(title)
+            .then((response) => {
+                setRoom(response.data);
+            }
+            )
+            .catch((error) => {
+                console.warn(error);
+            });
+        }
+        axios.get(`${BASE_URL}/getKeys/${userName}/${title}`)
+        .then((response) => {
+            console.log(response.data);
+            setKeys(response.data);
+             // @ts-ignore
+            let newMesages = [...stateRef.current.messages];
+            const message = decryptMessage(JSON.parse(wsResponse.body), response.data);
+            newMesages.push(message);
+            console.log(newMesages);
+            setMessages(newMesages);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    
+       
     }
 
 
-    const decryptMessage = async(message) => {
+    const decryptMessage = (message, keys) => {
+        console.log("Decrypting message")
         console.log(message);
         console.log(keys);
         const key = keys.find((key) => key.keyID === message.keyID);
         if (key) {
-            var publicKeyAB = str2ab(atob(key.publicKey)); 
-            console.log(publicKeyAB);
-            //import key to encrypt with RSA-OAEP   
-            crypto.subtle.importKey(
-                 "spki",    
-                  publicKeyAB, 
-                  { name: "RSA-OAEP", hash: {name: "SHA-256"}}, 
-                  false,
-                  ["encrypt"])
-            .then(function(key){
-                console.log(key);
-                //decrypt message with RSA-OAEP
-                crypto.subtle.decrypt(
-                    {
-                        name: "RSA-OAEP"
-                    },
-                    key,
-                    new Uint8Array(message.content)
-                )
-                .then(function(decrypted){
-                    console.log(new TextDecoder().decode(decrypted));
-                    message.content = new TextDecoder().decode(decrypted);
-                });               
-            }).catch(function(err) {
-                console.log(err );
-            }); 
+            const bufferKey = "-----BEGIN RSA PRIVATE KEY-----\n" + key.publicKey + "\n-----END RSA PRIVATE KEY-----";
+            const privateKey = forge.pki.privateKeyFromPem(bufferKey);
+            console.log(privateKey);
+            const decryptedMessage = privateKey.decrypt(forge.util.decode64(message.content));
+            console.log(decryptedMessage);
+            message.content = decryptedMessage.toString();
         } 
+        console.log(message);
         return message;
     }
-    function str2ab(str) {
-        var arrBuff = new ArrayBuffer(str.length);
-        var bytes = new Uint8Array(arrBuff);
-        for (var iii = 0; iii < str.length; iii++) {
-          bytes[iii] = str.charCodeAt(iii);
-        }
-        return bytes;
-      }
     //Scroll to bottom once new message is retrieved if was already scrolled to bottom
-    console.log(messages);
     useEffect(() => {
         if (endOfListRef.current && messages.length > 6) {
         const isScrolledToBottom = endOfListRef.current.getBoundingClientRect().bottom <= window.innerHeight;

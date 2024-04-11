@@ -1,7 +1,9 @@
 package tcd.ie.securesocial.model;
 
 
-import java.security.Key;
+
+
+import java.util.Set;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -28,9 +30,10 @@ public class UserKey{
     @Column(name = "keyID" , nullable = false, length = 100)
     private Long keyID;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "account_id")
-    private Account account;
+    @ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST,
+        CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH }) 
+    @JoinTable(name = "ACCOUNT_KEY_MAPPING", joinColumns = @JoinColumn(name = "USER_KEY_ID"), inverseJoinColumns = @JoinColumn(name = "ACCOUNT_ID"))
+    private Set<Account> accounts;
     
     
 

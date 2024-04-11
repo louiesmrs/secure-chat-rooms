@@ -42,17 +42,11 @@ export function postRoom(roomName, username) {
 }
 
 export function postJoinRoom(roomName, username) {
-  const values = {
-    username: username
-  }
-  return axios.post(`${BASE_URL}/joinroom/${roomName}`, values);
+  return axios.post(`${BASE_URL}/joinroom/${roomName}/${username}`);
 }
 
 export function postLeaveRoom(roomName, username) {
-const values = {
-    username: username
-  }
-  return axios.post(`${BASE_URL}/leaveroom/${roomName}`, values);
+  return axios.post(`${BASE_URL}/leaveroom/${roomName}/${username}`);
 }
 
 export function subscribeOnNewMessages(onNewMessage) {
@@ -77,6 +71,7 @@ export function postMessage({userName, message, room, chatColor}) {
 }
 
 export function postSystemMessage({message, roomName}) {
+    console.log("System message", message, roomName)
     let stompClient = getOrCreateStompClient();
     const transaction = stompClient.begin();
     stompClient.send(`/ws/message/${roomName}`, {}, JSON.stringify({

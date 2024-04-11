@@ -1,5 +1,6 @@
 package tcd.ie.securesocial.controller;
 import tcd.ie.securesocial.service.RoomService;
+import tcd.ie.securesocial.service.UserKeyDto;
 import tcd.ie.securesocial.model.UserKey;
 import tcd.ie.securesocial.service.RoomDto;
 import lombok.RequiredArgsConstructor;
@@ -36,15 +37,15 @@ public class RoomController {
         return roomService.saveRoom(roomDto, username);
     }
 
-    @PostMapping("/joinroom/{roomName}")
-    public ResponseEntity<Void> joinRoom(@PathVariable String roomName, @RequestBody String username) throws NoSuchAlgorithmException {
+    @PostMapping("/joinroom/{roomName}/{username}")
+    public ResponseEntity<Void> joinRoom(@PathVariable String roomName, @PathVariable String username) throws NoSuchAlgorithmException {
         roomService.memberJoin(roomName, username);
         return ResponseEntity.ok().build();
 
     }
 
-    @PostMapping("/leaveroom/{roomName}")
-    public ResponseEntity<Void> leaveRoom(@PathVariable String roomName, @RequestBody String username) throws NoSuchAlgorithmException {
+    @PostMapping("/leaveroom/{roomName}/{username}")
+    public ResponseEntity<Void> leaveRoom(@PathVariable String roomName, @PathVariable String username) throws NoSuchAlgorithmException {
         roomService.memberLeave(roomName, username);
         return ResponseEntity.ok().build();
     }
@@ -73,7 +74,7 @@ public class RoomController {
     }
 
     @GetMapping("/getKeys/{username}/{roomName}")
-    public ResponseEntity<List<UserKey>> getKeys(@PathVariable String username, @PathVariable String roomName) {
+    public ResponseEntity<List<UserKeyDto>> getKeys(@PathVariable String username, @PathVariable String roomName) {
         return ResponseEntity.ok(roomService.getUserKeysByRoom(roomName, username));
     }
     

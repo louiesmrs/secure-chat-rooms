@@ -29,6 +29,7 @@ import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 
 @Service
 @RequiredArgsConstructor
@@ -76,10 +77,10 @@ public class MessageService {
         Room room = roomRepository.findByRoomname(roomName)
                 .orElseThrow(() -> new IllegalArgumentException("Room does not exist"));
         Cipher cipher = Cipher.getInstance("RSA");
-        byte[] key = Base64.getDecoder().decode(room.getKeys().get(room.getKeys().size()-1).getPrivateKey());
-        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(key);
+        byte[] key = Base64.getDecoder().decode(room.getKeys().get(room.getKeys().size()-1).getPublicKey());
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(key);
         KeyFactory kf = KeyFactory.getInstance("RSA");
-        cipher.init(Cipher.ENCRYPT_MODE, kf.generatePrivate(spec));
+        cipher.init(Cipher.ENCRYPT_MODE, kf.generatePublic(spec));
         byte[] encryptedMessage = cipher.doFinal(message.getBytes());
         return Base64.getEncoder().encodeToString(encryptedMessage);
     }

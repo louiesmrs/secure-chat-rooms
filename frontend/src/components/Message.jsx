@@ -8,7 +8,7 @@ function Message({ msg, time, userName, chatColor}) {
           <div
             className="flex justify-evenly items-end max-w-[410px] p-2 break-words bg-[#202d33] rounded-md shadow-md"
           >
-            <p className={`${chatColor} font-bold text-sm mr-2`}>{userName}: <br></br><span className="text-white">{msg}</span></p>
+            <p className={`${chatColor} font-bold text-sm mr-2 truncate`}>{userName}: <br></br><span className="text-white">{msg.substring(0,50)}</span></p>
             <p className="text-[#8796a1] text-[10px] min-w-[50px]">{time}</p>
           </div>
       </div>

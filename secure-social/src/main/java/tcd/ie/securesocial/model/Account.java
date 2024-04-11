@@ -33,7 +33,9 @@ public class Account {
     @JoinTable(name = "ACCOUNT_ROOM_MAPPING", joinColumns = @JoinColumn(name = "ACCOUNT_ID"), inverseJoinColumns = @JoinColumn(name = "ROOM_ID"))
     private Set<Room> rooms;
 
-    @OneToMany(mappedBy = "account", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST,
+        CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH }) 
+    @JoinTable(name = "ACCOUNT_KEY_MAPPING", joinColumns = @JoinColumn(name = "ACCOUNT_ID"), inverseJoinColumns = @JoinColumn(name = "USER_KEY_ID"))
     private Set<UserKey> keys;
 
 
