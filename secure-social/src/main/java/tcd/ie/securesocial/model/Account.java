@@ -25,8 +25,8 @@ public class Account {
     @Column(name = "password", nullable = false, length = 100)
     private String password;
 
-    @Column(name = "cert" , nullable = false, columnDefinition = "LONGTEXT")
-    private String cert;
+    @Column(name = "decryptionkey" , nullable = false, columnDefinition = "LONGTEXT")
+    private String decryptionKey;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST,
          CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH }) 

@@ -17,6 +17,7 @@ import forge from "node-forge/lib/forge";
 import axios from "axios";
 import { BASE_URL } from "../api/baseApi";
 import "./typedef";
+
 function Chat() {
     const title = useParams().id;
 
@@ -45,7 +46,7 @@ function Chat() {
         const formData = new FormData();
         formData.append('username', userName);
         formData.append('roomName', title);
-        formData.append('cert', cert)
+        formData.append('key', privateKey)
         axios({
             method: 'post',
             url: `${BASE_URL}/getKeys`,
@@ -130,7 +131,7 @@ function Chat() {
         const formData = new FormData();
         formData.append('username', userName);
         formData.append('roomName', title);
-        formData.append('cert', cert)
+        formData.append('key', privateKey)
         axios({
             method: 'post',
             url: `${BASE_URL}/getKeys`,
@@ -196,8 +197,11 @@ function Chat() {
         e.preventDefault();
         if(userName !== "") {
             if(message !== "") {
-                //let encryptedMessage = privateKeyFromPem(privateKey).encrypt(forge);
-                postMessage({userName, message, room, chatColor: chatColor});
+                console.log(cert);
+                const certPem = forge.pki.certificateFromPem(cert);
+                const publicKey = certPem.publicKey;
+                const encrypted = forge.util.encode64(publicKey.encrypt(message));
+                postMessage({message: encrypted, room: room, userName: userName, chatColor: chatColor});
                 
             } else {
                 alert("Please enter a message");
@@ -324,3 +328,14 @@ function Chat() {
 }
 
 export default Chat;
+
+
+function _arrayBufferToBase64( buffer ) {
+    var binary = '';
+    var bytes = new Uint8Array( buffer );
+    var len = bytes.byteLength;
+    for (var i = 0; i < len; i++) {
+        binary += String.fromCharCode( bytes[ i ] );
+    }
+    return window.btoa( binary );
+}

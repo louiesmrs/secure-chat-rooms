@@ -21,8 +21,8 @@ public class UserKey{
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "publicKey" , nullable = false, columnDefinition = "LONGTEXT")
-    private String publicKey;
+    @Column(name = "privateKey" , nullable = false, columnDefinition = "LONGTEXT")
+    private String privateKey;
 
     @Column(name = "roomname" , nullable = false, length = 100)
     private String roomname;

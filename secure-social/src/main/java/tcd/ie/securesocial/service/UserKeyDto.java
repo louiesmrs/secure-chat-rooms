@@ -23,7 +23,7 @@ public class UserKeyDto implements Serializable {
 
     public static UserKeyDto fromUserKey(UserKey userkey) {
         return UserKeyDto.builder()
-                .publicKey(userkey.getPublicKey())
+                .publicKey(userkey.getPrivateKey())
                 .keyID(userkey.getKeyID())
                 .build();
     }

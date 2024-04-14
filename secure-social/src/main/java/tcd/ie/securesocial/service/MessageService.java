@@ -1,12 +1,20 @@
 package tcd.ie.securesocial.service;
 
+import tcd.ie.securesocial.model.Account;
 import tcd.ie.securesocial.model.Message;
 import tcd.ie.securesocial.model.Room;
+import tcd.ie.securesocial.repository.AccountRepository;
 import tcd.ie.securesocial.repository.MessageRepository;
 import tcd.ie.securesocial.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMParser;
+import org.springframework.security.crypto.codec.Hex;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
+
 
 import com.fasterxml.jackson.databind.JsonSerializable.Base;
 
@@ -24,12 +32,26 @@ import javax.crypto.NoSuchPaddingException;
 
 import static java.util.stream.Collectors.toList;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Security;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+
+
 
 @Service
 @RequiredArgsConstructor
@@ -37,9 +59,19 @@ public class MessageService {
 
     private final MessageRepository messageRepository;
     private final RoomRepository roomRepository;
+    private final AccountRepository accountRepository;
+    static {
+        Security.addProvider(new BouncyCastleProvider());
+    }
+    
 
-    public MessageDto saveMessage(MessageDto uiMessage) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
-        String crypto = encryptMessage(uiMessage.getContent(), uiMessage.getRoomName());
+    public MessageDto saveMessage(MessageDto uiMessage) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException, CertificateException, SignatureException, IOException, NoSuchProviderException {
+        String decryptedMessage = uiMessage.getContent();
+        if(!uiMessage.getUserName().equals("System")) {
+            decryptedMessage = decryptMessage(uiMessage.getContent(), uiMessage.getUserName());
+        }
+        System.out.println(decryptedMessage);
+        String crypto = encryptMessage(decryptedMessage, uiMessage.getRoomName());
         Long keyId = getRoomKeyId(uiMessage.getRoomName());
         Message message = Message.builder()
                 .message(HtmlUtils.htmlEscape(crypto))
@@ -90,4 +122,14 @@ public class MessageService {
                 .orElseThrow(() -> new IllegalArgumentException("Room does not exist"));
         return roomObj.getKeys().get(roomObj.getKeys().size()-1).getId();
     }
-}
+
+    public String decryptMessage(String message, String username) throws CertificateException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException, NoSuchProviderException {
+        Account user = accountRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
+        byte[] prvder = Base64.getDecoder().decode(user.getDecryptionKey().replaceAll("-----(BEGIN|END) RSA PRIVATE KEY-----","").replaceAll("\n","").replaceAll("\r",""));
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.DECRYPT_MODE, KeyFactory.getInstance("RSA","BC") .generatePrivate(new PKCS8EncodedKeySpec(prvder) ));
+        byte[] decryptedMessage = cipher.doFinal(Base64.getDecoder().decode(message));
+        return new String(decryptedMessage);
+    }
+ }

@@ -1,9 +1,11 @@
-# SwengGroup12
-Optimised Live Video Analytics at Scale (TCD Software Engineering Project)
+# Secure Social Media App
+
 
 ## Steps to run the application
-1. Run `docker compose up --build` from the repository root (the folder with the compose.yaml file).
-2. Go to [/frontend](/frontend) folder.
-3. Run `npm install`.
-4. Run `npm run dev`.
-5. Go to <http://localhost:3000/> to access the app.
+1. Go to [/secure-social](/secure-social) folder. 
+2. Run `mvn spring-boot:run`.
+3. Go to <http://localhost:8080/h2-console> and login with usename:admin, password:admin, to access the database
+4. Go to [/frontend](/frontend) folder.
+5. Run `npm install`.
+6. Run `npm run dev`.
+7. Go to <http://localhost:5173/> to access the app.

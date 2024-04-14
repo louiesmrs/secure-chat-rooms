@@ -156,7 +156,7 @@ public class RoomService {
             System.out.println("User: " + user.getUsername());
         }
         UserKey userKey = UserKey.builder()
-                .publicKey(newKey.getPrivateKey())
+                .privateKey(newKey.getPrivateKey())
                 .roomname(room.getRoomname())
                 .keyID(newKey.getId())
                 .accounts(new HashSet<>(room.getUsers()))
@@ -164,10 +164,10 @@ public class RoomService {
         userKeyRepository.save(userKey); 
     }
 
-    public List<UserKeyDto> getUserKeysByRoom(String roomName, String username, String cert) {
+    public List<UserKeyDto> getUserKeysByRoom(String roomName, String username, String key) {
         Account user = accountRepository.findByUsername(username)
             .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
-        if(!user.getCert().equals(cert)){
+        if(!user.getDecryptionKey().equals(key)){
             throw new IllegalArgumentException("Invalid certificate");
         }
         return user.getKeys().stream()

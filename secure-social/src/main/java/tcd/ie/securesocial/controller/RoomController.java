@@ -74,8 +74,8 @@ public class RoomController {
     }
 
     @PostMapping("/getKeys")
-    public ResponseEntity<List<UserKeyDto>> getKeys(@RequestParam("username") String username, @RequestParam("roomName") String roomName, @RequestParam("cert") String cert) {
-        return ResponseEntity.ok(roomService.getUserKeysByRoom(roomName, username, cert));
+    public ResponseEntity<List<UserKeyDto>> getKeys(@RequestParam("username") String username, @RequestParam("roomName") String roomName, @RequestParam("key") String key) {
+        return ResponseEntity.ok(roomService.getUserKeysByRoom(roomName, username, key));
     }
 
     @GetMapping("/rooms/{username}")

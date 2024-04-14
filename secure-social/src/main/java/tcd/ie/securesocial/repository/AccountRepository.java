@@ -11,6 +11,6 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     boolean existsByUsername(String username);
 
     @Modifying
-    @Query("update Account a set a.cert = ?2 where a.username = ?1")
-    void updateCert(String username, String cert);
+    @Query("update Account a set a.decryptionKey = ?1 where a.username = ?2")
+    void updateDecryptionKey(String decryptionKey, String username);
 }

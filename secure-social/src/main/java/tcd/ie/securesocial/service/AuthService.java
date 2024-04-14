@@ -23,7 +23,7 @@ public class AuthService {
         Account account = Account.builder()
                 .username(request.username())
                 .password(passwordEncoder.encode(request.password()))
-                .cert(request.cert())
+                .decryptionKey(request.decryptionKey())
                 .build();
         accountRepository.save(account);
     }
@@ -38,7 +38,7 @@ public class AuthService {
         if (!passwordEncoder.matches(request.password(), account.getPassword())) {
             throw new IllegalArgumentException("Invalid password");
         }
-        accountRepository.updateCert(request.username(), request.cert());
+        accountRepository.updateDecryptionKey(request.decryptionKey(), request.username());
         
     }
 

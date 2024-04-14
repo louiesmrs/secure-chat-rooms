@@ -2,7 +2,6 @@
 import axios from 'axios';
 import {BASE_URL} from './baseApi';
 import {getOrCreateStompClient} from './stompClient';
-import { number } from 'sockjs-client/lib/utils/random';
 
 export function loadMessages() {
   return axios.get(`${BASE_URL}/message`);
@@ -62,10 +61,12 @@ export function postMessage({userName, message, room, chatColor}) {
   let stompClient = getOrCreateStompClient();
   const transaction = stompClient.begin();
   stompClient.send(`/ws/message/${room.roomName}`, {}, JSON.stringify({
-    content: message,
-    userName: userName,
-    roomName: room.roomName,
-    chatColor: chatColor
+    message : {
+      content: message,
+      userName: userName,
+      roomName: room.roomName,
+      chatColor: chatColor
+    }
   }));
   transaction.commit();
 }
@@ -75,11 +76,12 @@ export function postSystemMessage({message, roomName}) {
     let stompClient = getOrCreateStompClient();
     const transaction = stompClient.begin();
     stompClient.send(`/ws/message/${roomName}`, {}, JSON.stringify({
-      content: message,
-      userName: "System",
-      roomName: roomName,
-      chatColor: "text-white"
-
+      message : {
+        content: message,
+        userName: "System",
+        roomName: roomName,
+        chatColor: "text-white"
+      }
     }));
     transaction.commit();
   }

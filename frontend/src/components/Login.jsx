@@ -26,7 +26,7 @@ export default function Login() {
             const values = {
                 username: username,
                 password: password,
-                cert : ca.ca.cert
+                decryptionKey : ca.ca.key
             }
             axios.post(`${BASE_URL}/auth/login`, values)
             .then((response) => {

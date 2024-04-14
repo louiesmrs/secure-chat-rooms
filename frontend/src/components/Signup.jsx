@@ -5,7 +5,6 @@ import { AuthContext } from './AuthUtil';
 import Navbar from './Navbar';
 import forge from 'node-forge';
 import { BASE_URL } from '../api/baseApi';
-import { Buffer } from 'buffer';
 import { v4 as uuidv4 } from 'uuid';
 export default function Login() {
     const [username, setUsername] = useState('');
@@ -26,8 +25,9 @@ export default function Login() {
             const values = {
                 username: username,
                 password: password,
-                cert: ca.ca.cert
+                decryptionKey : ca.ca.key
             }
+            console.log(forge.pki.certificateFromPem(ca.ca.cert));
             axios.post(`${BASE_URL}/auth/register`, values)
             .then((response) => {
                 console.log(response);
@@ -115,7 +115,7 @@ export function genCACert(options = {}) {
     
     let cert = forge.pki.createCertificate()
     cert.publicKey = keyPair.publicKey
-    cert.serialNumber = uuidv4();
+    cert.serialNumber = '01';
     cert.validity.notBefore = new Date()
     cert.validity.notBefore.setDate(cert.validity.notBefore.getDate() - 1)
     cert.validity.notAfter = new Date()
