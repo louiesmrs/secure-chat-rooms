@@ -65,7 +65,8 @@ public class MessageService {
     }
     
 
-    public MessageDto saveMessage(MessageDto uiMessage) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException, CertificateException, SignatureException, IOException, NoSuchProviderException {
+    public MessageDto saveMessage(MessageDto uiMessage) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, 
+    IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException, CertificateException, SignatureException, IOException, NoSuchProviderException {
         String decryptedMessage = uiMessage.getContent();
         if(!uiMessage.getUserName().equals("System")) {
             decryptedMessage = decryptMessage(uiMessage.getContent(), uiMessage.getUserName());
@@ -104,6 +105,12 @@ public class MessageService {
                 .collect(toList());
     }
 
+    public Long getRoomKeyId(String room) {
+        Room roomObj = roomRepository.findByRoomname(room)
+                .orElseThrow(() -> new IllegalArgumentException("Room does not exist"));
+        return roomObj.getKeys().get(roomObj.getKeys().size()-1).getId();
+    }
+
     public String encryptMessage(String message, String roomName) throws NoSuchAlgorithmException,
      NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
         Room room = roomRepository.findByRoomname(roomName)
@@ -117,16 +124,16 @@ public class MessageService {
         return Base64.getEncoder().encodeToString(encryptedMessage);
     }
 
-    public Long getRoomKeyId(String room) {
-        Room roomObj = roomRepository.findByRoomname(room)
-                .orElseThrow(() -> new IllegalArgumentException("Room does not exist"));
-        return roomObj.getKeys().get(roomObj.getKeys().size()-1).getId();
-    }
 
-    public String decryptMessage(String message, String username) throws CertificateException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException, NoSuchProviderException {
+    public String decryptMessage(String message, String username) throws CertificateException, 
+    NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, 
+    IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException, NoSuchProviderException {
         Account user = accountRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User does not exist"));
-        byte[] prvder = Base64.getDecoder().decode(user.getDecryptionKey().replaceAll("-----(BEGIN|END) RSA PRIVATE KEY-----","").replaceAll("\n","").replaceAll("\r",""));
+        byte[] prvder = Base64.getDecoder().decode(user.getDecryptionKey()
+            .replaceAll("-----(BEGIN|END) RSA PRIVATE KEY-----","")
+            .replaceAll("\n","")
+            .replaceAll("\r",""));
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.DECRYPT_MODE, KeyFactory.getInstance("RSA","BC") .generatePrivate(new PKCS8EncodedKeySpec(prvder) ));
         byte[] decryptedMessage = cipher.doFinal(Base64.getDecoder().decode(message));

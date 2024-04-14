@@ -5,7 +5,7 @@ import { AuthContext } from './AuthUtil';
 import Navbar from './Navbar';
 import forge from 'node-forge';
 import { BASE_URL } from '../api/baseApi';
-import { v4 as uuidv4 } from 'uuid';
+
 export default function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -104,13 +104,6 @@ export function genCACert(options = {}) {
         commonName: 'Testing CA - DO NOT TRUST',
         bits: 2048
     }, ...options}
-    
-    // let keyPair = await new Promise((res, rej) => {
-    //     forge.pki.rsa.generateKeyPair({ bits: options.bits }, (error, pair) => {
-    //         if (error) rej(error);
-    //         else res(pair)
-    //     })
-    // })
     let keyPair = forge.pki.rsa.generateKeyPair({ bits: options.bits })
     
     let cert = forge.pki.createCertificate()

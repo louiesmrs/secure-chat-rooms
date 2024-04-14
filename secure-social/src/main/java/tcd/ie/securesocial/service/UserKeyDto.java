@@ -16,14 +16,14 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class UserKeyDto implements Serializable {
 
-    private String publicKey;
+    private String privateKey;
     private long keyID;
 
   
 
     public static UserKeyDto fromUserKey(UserKey userkey) {
         return UserKeyDto.builder()
-                .publicKey(userkey.getPrivateKey())
+                .privateKey(userkey.getPrivateKey())
                 .keyID(userkey.getKeyID())
                 .build();
     }

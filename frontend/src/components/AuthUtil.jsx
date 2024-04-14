@@ -14,15 +14,26 @@ export const AuthProvider = ({children }) => {
   });
   const [groups, setGroups] = useState(() => {
     const saved = JSON.parse(localStorage.getItem("groups"));
-    return saved || axios.get(`${BASE_URL}/rooms/${userName}`).then((response) => {
-      return response.data
-    })
-    .catch((error) => {
-      console.warn(error);
-      alert("Error fetching rooms");
-    }
-    );  
-});
+    console.log(saved)
+    if(Object.keys(saved).length === 0){
+      if(userName !== "") { 
+        let groups = [];
+        axios.get(`${BASE_URL}/rooms/${userName}`).then((response) => {
+          console.log(response.data);
+          groups = response.data;
+        })
+        .catch((error) => {
+          console.warn(error);
+          
+        })
+        return groups;
+      } else {
+        return [];
+      }
+      } else {
+        return saved || [];
+      }
+  });
 
   const [chatColor, setChatColor] = useState(() => {
     const saved = JSON.parse(localStorage.getItem("chatColor"));

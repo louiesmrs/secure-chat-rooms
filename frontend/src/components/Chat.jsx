@@ -162,7 +162,7 @@ function Chat() {
         console.log(keys);
         const key = keys.find((key) => key.keyID === message.keyID);
         if (key) {
-            const bufferKey = "-----BEGIN RSA PRIVATE KEY-----\n" + key.publicKey + "\n-----END RSA PRIVATE KEY-----";
+            const bufferKey = "-----BEGIN RSA PRIVATE KEY-----\n" + key.privateKey + "\n-----END RSA PRIVATE KEY-----";
             const privateKey = forge.pki.privateKeyFromPem(bufferKey);
             console.log(privateKey);
             const decryptedMessage = privateKey.decrypt(forge.util.decode64(message.content));
