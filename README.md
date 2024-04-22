@@ -1,6 +1,10 @@
 # Secure Social Media App
 
 
+https://github.com/louiesmrs/secure-chat-rooms/assets/121096674/a93f3cc4-e198-4b52-bb16-0a241bbb8a04
+
+
+
 ## Steps to run the application
 1. Go to [/secure-social](/secure-social) folder. 
 2. Run `mvn spring-boot:run`.
